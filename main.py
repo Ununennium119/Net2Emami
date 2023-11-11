@@ -1,39 +1,61 @@
+import argparse
 import datetime
 import time
-import typing
 
+import print_color
 import requests
-from print_color import print
 
-Color = typing.Literal[
-    "purple",
-    "blue",
-    "green",
-    "yellow",
-    "red",
-    "magenta",
-    "yan",
-    "black",
-    "white",
-    "v",
-    "p",
-    "b",
-    "g",
-    "y",
-    "r",
-    "m",
-    "c",
-    "k",
-    "w",
-]
+Color = print_color.print_color.Color
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        prog='Net2 Emami',
+        description='This program enables you to use Net2 without limitations'
+    )
+    parser.add_argument(
+        '-c', '--credentials',
+        action="store",
+        dest="credentials",
+        help="The file containing the username in its first line and the password in its second line.",
+        default="credentials"
+    )
+    parser.add_argument(
+        '-ir', '--login-retry',
+        action="store",
+        dest="login_retry",
+        type=float,
+        help="The seconds between retries for login",
+        default="0.25"
+    )
+    parser.add_argument(
+        '-or', '--logout-retry',
+        action="store",
+        dest="logout_retry",
+        type=float,
+        help="The seconds between retries for logout",
+        default="0.25"
+    )
+    parser.add_argument(
+        '-y', '--cycle',
+        action="store",
+        dest="cycle",
+        type=float,
+        help="The seconds between each logout-login",
+        default="30"
+    )
+
+    args = parser.parse_args()
+    credentials = args.credentials
+    login_retry = float(args.login_retry)
+    logout_retry = float(args.logout_retry)
+    cycle = float(args.cycle)
+
     net2_emami = Net2Emami(
-        'credentials',
-        0.25,
-        0.25,
-        30
+        credentials,
+        login_retry,
+        logout_retry,
+        cycle
     )
     net2_emami.run()
 
@@ -43,7 +65,7 @@ class Net2Emami:
         def __init__(self, name: str, color: Color):
             self.name: str = name
             self.color: Color = color
-            
+
     infoTag = LogTag('INFO', 'blue')
     warnTag = LogTag('WARN', 'yellow')
 
@@ -64,14 +86,12 @@ class Net2Emami:
         self.cycle_seconds: float = cycle_seconds
 
     def run(self):
-        while not self._login():
-            time.sleep(self.login_retry_seconds)
         while True:
-            time.sleep(self.cycle_seconds)
             while not self._logout():
                 time.sleep(self.logout_retry_seconds)
             while not self._login():
                 time.sleep(self.login_retry_seconds)
+            time.sleep(self.cycle_seconds)
 
     def _login(self) -> bool:
         """Log in to net2.
@@ -113,7 +133,7 @@ class Net2Emami:
 
     @staticmethod
     def _log(message: str, tag: LogTag):
-        print(
+        print_color.print(
             f'{datetime.datetime.now()}\t\t{message}',
             tag=tag.name,
             tag_color=tag.color
