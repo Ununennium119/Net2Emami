@@ -20,7 +20,7 @@ git clone https://github.com/Ununennium119/Net2Emami.git
 - Navigate to the project directory:
 
 ```shell
-cd Net2Emami
+cd net2emami/net2_emami
 ```
 
 - Install the required dependencies using pip:
