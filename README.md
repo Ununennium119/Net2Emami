@@ -11,9 +11,19 @@ Net2 Emami is a script that allows you to use Net2 without limitations by repeat
 
 ## Installation
 
-1. Clone the repository to your local machine using `git clone`.
-2. Navigate into the project folder using `cd`.
-3. Install the required dependencies by running:
+To install the project on your local machine, follow these steps:
+- Clone the repository using the command:
+
+```shell
+git clone https://github.com/Ununennium119/Net2Emami.git
+```
+- Navigate to the project directory:
+
+```shell
+cd Net2Emami
+```
+
+- Install the required dependencies using pip:
 
 ```shell
 python -m pip install -r requirements.txt
@@ -21,13 +31,13 @@ python -m pip install -r requirements.txt
 
 ## Usage
 
-To run the script, use the following command:
+To use the project, navigate to the project directory and run the main Python script:
 
 ```shell
 python main.py
 ```
 
-You can view the help documentation by running:
+For help on how to use the script, use the --help flag:
 
 ```shell
 python main.py --help
@@ -35,9 +45,14 @@ python main.py --help
 
 ## Contributing
 
-Contributions are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Contributions to the project are welcome. If you wish to contribute, please follow these steps:
 
-Please make sure to update tests as appropriate.
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Make your changes in the new branch.
+4. Submit a pull request with a detailed description of your changes.
+
+Please ensure that your code adheres to the existing style for consistency.
 
 ## License
 
