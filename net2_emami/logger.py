@@ -1,25 +1,23 @@
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 
 from print_color import print_color
 
 
 class LogLevel(Enum):
     """
-    An enumeration of log levels.
-
-    This class represents the different levels of logging that can be used
-    by the Logger class. Each level corresponds to a different severity of
-    the logged messages.
+    Enumeration of log levels.
 
     Attributes:
-        ERROR (int): The error log level.
-        WARN (int): The warning log level.
-        SUCCESS (int): The success log level.
-        INFO (int): The info log level.
-        DEBUG (int): The debug log level.
+        NO_LOG: No logging.
+        ERROR: Log errors.
+        WARN: Log warnings.
+        SUCCESS: Log success messages.
+        INFO: Log informational messages.
+        DEBUG: Log debug messages.
     """
-
+    NO_LOG = 0
     ERROR = 1
     WARN = 2
     SUCCESS = 3
@@ -29,15 +27,24 @@ class LogLevel(Enum):
 
 class Logger:
     """
-    A singleton class for logging messages with different log levels.
-
-    This class provides methods for logging messages at different levels:
-    debug, success, info, warn, and error. Each method logs the message
-    with a corresponding log level and color.
+    Singleton class for logging.
 
     Attributes:
-        _instance (Logger): The singleton instance of the Logger class.
-        Color (print_color.Color): The color enumeration from the print_color module.
+        _instance: Instance of the Logger class.
+        Color: Color enumeration for print_color.
+
+    Methods:
+        __init__: Initialize the Logger instance.
+        __new__: Create a new Logger instance.
+        log_level: Getter and setter for the log level.
+        write_to_file: Getter and setter for whether to write to a file.
+        stop: Stop the logger and delete the log file if it is not needed.
+        error: Log an error message.
+        warn: Log a warning message.
+        success: Log a success message.
+        info: Log an informational message.
+        debug: Log a debug message.
+        _log: Log a message with a given level and color.
     """
 
     _instance = None
@@ -45,31 +52,30 @@ class Logger:
 
     def __init__(self):
         """
-        Initializes the Logger instance.
+        Initialize the Logger instance.
 
-        The log level is set to SUCCESS by default.
+        The log level is set to SUCCESS by default,
+        and it logs to a file with a name based on the current date and time.
         """
-        self._log_level = LogLevel.SUCCESS
+        self._log_level: LogLevel = LogLevel.SUCCESS
+        self._write_to_file: bool = False
+        self._log_file_path: str = f'{datetime.now().strftime("%Y%m%d_%H%M%S")}_log.txt'
+        self._log_file = open(self._log_file_path, 'w')
 
     def __new__(cls):
         """
-        Create a new Logger instance if one does not exist.
+        Create a new Logger instance.
 
-        This method overrides the __new__ method to implement the singleton pattern.
-        If an instance of the Logger class does not exist, it creates one.
-        Otherwise, it returns the existing instance.
-
-        Returns:
-            Logger: The singleton instance of the Logger class.
+        If the Logger instance already exists, it returns the existing instance.
         """
         if cls._instance is None:
             cls._instance = super(Logger, cls).__new__(cls)
         return cls._instance
 
     @property
-    def log_level(self):
+    def log_level(self) -> LogLevel:
         """
-        Get the current log level.
+        Getter for the log level.
 
         Returns:
             LogLevel: The current log level.
@@ -79,21 +85,52 @@ class Logger:
     @log_level.setter
     def log_level(self, value: LogLevel):
         """
-        Set the current log level.
+        Setter for the log level.
 
         Args:
             value (LogLevel): The new log level.
         """
         self._log_level = value
 
+    @property
+    def write_to_file(self) -> bool:
+        """
+        Getter for whether to write to a file.
+
+        Returns:
+            bool: Whether to write to a file.
+        """
+        return self._write_to_file
+
+    @write_to_file.setter
+    def write_to_file(self, value: bool):
+        """
+        Setter for whether to write to a file.
+
+        Args:
+            value (bool): Whether to write to a file.
+        """
+        self._write_to_file = value
+
+    def stop(self):
+        """
+        Stop the logger and delete the log file if it is not needed.
+        """
+        if not self._log_file.closed:
+            self._log_file.flush()
+            self._log_file.close()
+        if not self._write_to_file:
+            path = Path(self._log_file_path)
+            path.unlink(missing_ok=True)
+
     def error(self, message: str):
         """
         Log an error message.
 
         Args:
-            message (str): The message to log.
+            message (str): The error message.
         """
-        if self.log_level >= LogLevel.ERROR:
+        if self.log_level.value >= LogLevel.ERROR.value:
             self._log(message, 'ERROR', 'red')
 
     def warn(self, message: str):
@@ -101,9 +138,9 @@ class Logger:
         Log a warning message.
 
         Args:
-            message (str): The message to log.
+            message (str): The warning message.
         """
-        if self.log_level >= LogLevel.WARN:
+        if self.log_level.value >= LogLevel.WARN.value:
             self._log(message, 'WARN', 'yellow')
 
     def success(self, message: str):
@@ -111,19 +148,19 @@ class Logger:
         Log a success message.
 
         Args:
-            message (str): The message to log.
+            message (str): The success message.
         """
-        if self.log_level >= LogLevel.SUCCESS:
+        if self.log_level.value >= LogLevel.SUCCESS.value:
             self._log(message, 'SUCCESS', 'green')
 
     def info(self, message: str):
         """
-        Log an info message.
+        Log an informational message.
 
         Args:
-            message (str): The message to log.
+            message (str): The informational message.
         """
-        if self.log_level >= LogLevel.INFO:
+        if self.log_level.value >= LogLevel.INFO.value:
             self._log(message, 'INFO', 'blue')
 
     def debug(self, message: str):
@@ -131,26 +168,25 @@ class Logger:
         Log a debug message.
 
         Args:
-            message (str): The message to log.
+            message (str): The debug message.
         """
-        if self.log_level >= LogLevel.DEBUG:
+        if self.log_level.value >= LogLevel.DEBUG.value:
             self._log(message, 'DEBUG', 'white')
 
-    @staticmethod
-    def _log(message: str, log_level: str, color: Color):
+    def _log(self, message: str, log_level: str, color: Color):
         """
-        Log a message with a specified log type and color.
-
-        This method logs the message with the specified log type and color.
-        It uses the print_color module to print the message with the specified color.
+        Log a message with a given level and color.
 
         Args:
             message (str): The message to log.
-            log_level (str): The log type of the message.
-            color (Color): The color to use when printing the message.
+            log_level (str): The level of the message.
+            color (Color): The color of the message.
         """
+        log = f'{datetime.now()}\t\t{message}'
         print_color.print(
-            f'{datetime.now()}\t\t{message}',
+            log,
             tag=log_level,
             tag_color=color
         )
+        if self._write_to_file and not self._log_file.closed:
+            self._log_file.write(f'{log}\n')

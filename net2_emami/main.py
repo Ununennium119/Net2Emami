@@ -1,6 +1,9 @@
 import argparse
+import signal
+import threading
 
-from net2_emami.net2_emami import Net2Emami
+from logger import LogLevel
+from auto_login import AutoLogin
 
 
 def main():
@@ -21,7 +24,7 @@ def main():
         dest="login_retry",
         type=float,
         help="The seconds between retries for login",
-        default="0.25"
+        default=0.25
     )
     parser.add_argument(
         '-or', '--logout-retry',
@@ -29,7 +32,7 @@ def main():
         dest="logout_retry",
         type=float,
         help="The seconds between retries for logout",
-        default="0.25"
+        default=0.25
     )
     parser.add_argument(
         '-y', '--cycle',
@@ -37,7 +40,23 @@ def main():
         dest="cycle",
         type=float,
         help="The seconds between each logout-login",
-        default="30"
+        default=30
+    )
+    parser.add_argument(
+        '-l', '--log-level',
+        action="store",
+        dest="log_level",
+        type=int,
+        choices=list(range(6)),
+        help="Log level (NO_LOG = 0, ERROR = 1 WARN = 2 SUCCESS = 3 INFO = 4 DEBUG = 5)",
+        default=4
+    )
+    parser.add_argument(
+        '-lf', '--log-file',
+        action="store_true",
+        dest="log_file",
+        help="If present, a log file will be created",
+        default=False
     )
 
     args = parser.parse_args()
@@ -45,14 +64,18 @@ def main():
     login_retry = float(args.login_retry)
     logout_retry = float(args.logout_retry)
     cycle = float(args.cycle)
+    log_level = LogLevel(args.log_level)
+    log_file = args.log_file
 
-    net2_emami = Net2Emami(
+    auto_login = AutoLogin(
         credentials,
         login_retry,
         logout_retry,
-        cycle
+        cycle,
+        log_level,
+        log_file
     )
-    net2_emami.run()
+    auto_login.run()
 
 
 if __name__ == '__main__':
