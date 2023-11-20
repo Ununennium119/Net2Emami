@@ -31,7 +31,14 @@ python -m pip install -r requirements.txt
 
 ## Usage
 
-To use the project, navigate to the project directory and run the main Python script:
+To use the project, navigate to the `net2_emami` directory and create a file with name `credentials` with this format:
+
+```
+username
+password
+```
+
+Then run the main Python script:
 
 ```shell
 python main.py
